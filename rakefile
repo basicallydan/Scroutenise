@@ -1,8 +1,9 @@
 require 'fileutils'
 
 namespace :build do
-  JS_DIRECTORY  = "src/"
-  BIN_DIRECTORY = "bin/"
+  JS_DIRECTORY  		= "src/"
+  BIN_DIRECTORY 		= "bin/"
+	EXAMPLE_DIRECTORY = "example/"
 
 	desc "Minifying the javascript files"
 	task :minify_js do
@@ -14,7 +15,9 @@ namespace :build do
 	end
 
   task :copy_files do
+		mkdir_p BIN_DIRECTORY
     cp_r JS_DIRECTORY + 'Scroutenise.min.js', BIN_DIRECTORY
+		cp_r JS_DIRECTORY + 'Scroutenise.min.js', EXAMPLE_DIRECTORY
   end
 	
 	desc "Run all the build tasks"
