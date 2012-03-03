@@ -1,0 +1,22 @@
+require 'fileutils'
+
+namespace :build do
+  JS_DIRECTORY  = "src/"
+  BIN_DIRECTORY = "bin/"
+
+	desc "Minifying the javascript files"
+	task :minify_js do
+		sh("juicer merge -i " + JS_DIRECTORY + "Scroutenise.js --force");
+	end
+
+	task :clear_directory do
+		rm_r BIN_DIRECTORY, :force => true
+	end
+
+  task :copy_files do
+    cp_r JS_DIRECTORY + 'Scroutenise.min.js', BIN_DIRECTORY
+  end
+	
+	desc "Run all the build tasks"
+	task :default => [:minify_js, :clear_directory, :copy_files]
+end
