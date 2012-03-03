@@ -80,7 +80,7 @@ Scroutenise.prototype.searchAroundPoint = function(latLngPoint, searchTypes, sea
   this.searchService.search(searchRequest, callback);
 }
 
-Scroutenise.prototype.getDirections = function(start, end, typesToSearchFor, searchRadius)
+Scroutenise.prototype.getDirections = function(start, end, typesToSearchFor, searchRadius, travelMode)
 {
   var self = this;
   this.map.clearMarkers();
@@ -89,8 +89,6 @@ Scroutenise.prototype.getDirections = function(start, end, typesToSearchFor, sea
 
   if(typeof(this.onSearchStart) != 'undefined')
     this.onSearchStart();
-
-  var travelMode = this.getSelectedTravelMode();
 
   var directions = {
     origin: start,
