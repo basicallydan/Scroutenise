@@ -6,8 +6,8 @@
  * @depend InfoWindowHelpers.js
  */
 
-
 function Scroutenise(map, searchService, directionsService, directionsDisplay, autocomplete) {
+
   this.map = map;
 
   this.searchService = new google.maps.places.PlacesService(map);
@@ -22,18 +22,24 @@ function Scroutenise(map, searchService, directionsService, directionsDisplay, a
 
   return {
     debugMode : false,
+
     searchMethod : "RADIUS",
+
     renderedResultReferences : [],
-    OnSearchStart : function(callback) {
+
+    OnSearchStart : function (callback) {
       this.onSearchStart = callback;
     },
-    OnSearchStep : function(callback) {
+
+    OnSearchStep : function (callback) {
       this.onSearchStep = callback;
     },
-    OnSearchEnd : function(callback) {
+
+    OnSearchEnd : function (callback) {
       this.onSearchend = callback;
     },
-    addMarkerFromPlacesResult : function(result) {
+
+    addMarkerFromPlacesResult : function (result) {
       if(this.renderedResultReferences.indexOf(result.id) == -1)
       {
         var placeLatLng = new google.maps.LatLng(result.geometry.location.lat(), result.geometry.location.lng())
@@ -48,12 +54,14 @@ function Scroutenise(map, searchService, directionsService, directionsDisplay, a
         this.renderedResultReferences.push(result.id);
       }
     },
-    clearResults : function()
+
+    clearResults : function ()
     {
       this.map.clearMarkers();
       this.renderedResultReferences = [];
     },
-    searchWithinBounds : function(searchTypes, bounds, callback)
+
+    searchWithinBounds : function (searchTypes, bounds, callback)
     {        
       var searchRequest = {
         bounds: bounds,
@@ -61,16 +69,8 @@ function Scroutenise(map, searchService, directionsService, directionsDisplay, a
       };
       this.searchService.search(searchRequest, callback);
     },
-    searchAroundPoint : function(latLngPoint, searchTypes, searchRadius, searchService, callback)
-    {
-      var searchRequest = {
-        location: latLngPoint,
-        radius: searchRadius,
-        types: searchTypes
-      };
-      this.searchService.search(searchRequest, callback);
-    }
-    searchAroundPoint : function(latLngPoint, searchTypes, searchRadius, searchService, callback)
+
+    searchAroundPoint : function (latLngPoint, searchTypes, searchRadius, searchService, callback)
     {
       var searchRequest = {
         location: latLngPoint,
@@ -79,7 +79,18 @@ function Scroutenise(map, searchService, directionsService, directionsDisplay, a
       };
       this.searchService.search(searchRequest, callback);
     },
-    getDirections : function(start, end, typesToSearchFor, searchRadius, travelMode)
+
+    searchAroundPoint : function (latLngPoint, searchTypes, searchRadius, searchService, callback)
+    {
+      var searchRequest = {
+        location: latLngPoint,
+        radius: searchRadius,
+        types: searchTypes
+      };
+      this.searchService.search(searchRequest, callback);
+    },
+
+    getDirections : function (start, end, typesToSearchFor, searchRadius, travelMode)
     {
       var self = this,
         directions = {
@@ -160,4 +171,5 @@ function Scroutenise(map, searchService, directionsService, directionsDisplay, a
         }
       });
     }
-  }
+  };
+}
