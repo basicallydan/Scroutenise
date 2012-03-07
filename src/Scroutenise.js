@@ -6,21 +6,22 @@
  * @depend InfoWindowHelpers.js
  */
 
-function Scroutenise(map, searchService, directionsService, directionsDisplay, autocomplete) {
+function Scroutenise(map) {
+  var searchService = new google.maps.places.PlacesService(map),
+    directionsService = new google.maps.DirectionsService(),
+    directionsDisplay = new google.maps.DirectionsRenderer();
 
-  this.map = map;
-
-  this.searchService = new google.maps.places.PlacesService(map);
-
-  this.directionsService = new google.maps.DirectionsService();
-
-  this.directionsDisplay = new google.maps.DirectionsRenderer();
-
-  this.directionsDisplay.setMap(this.map);
-
-  this.autocomplete = autocomplete;
-
+  directionsDisplay.setMap(map);
+    
   return {
+    map : map,
+
+    searchService : searchService,
+
+    directionsService : directionsService,
+
+    directionsDisplay : directionsDisplay,
+
     debugMode : false,
 
     searchMethod : "RADIUS",
@@ -36,7 +37,7 @@ function Scroutenise(map, searchService, directionsService, directionsDisplay, a
     },
 
     OnSearchEnd : function (callback) {
-      this.onSearchend = callback;
+      this.onSearchEnd = callback;
     },
 
     addMarkerFromPlacesResult : function (result) {
@@ -109,7 +110,7 @@ function Scroutenise(map, searchService, directionsService, directionsDisplay, a
         this.onSearchStart();
 
       self.directionsService.route(directions, function(result, status) {
-        if(status == google.maps.DirectionsStatus.OK) {
+        if (status == google.maps.DirectionsStatus.OK) {
           self.directionsDisplay.setDirections(result);
 
           var allPoints = DirectionsRouteHelpers.getPathAsLatLngArray(result, searchRadius / 2);
@@ -124,31 +125,49 @@ function Scroutenise(map, searchService, directionsService, directionsDisplay, a
               var originalBounds = result.routes[0].bounds;
               var resultingBounds = originalBounds.expandBy(searchRadius);
 
-              self.searchWithinBounds(typesToSearchFor, resultingBounds, function(results, status) {
-                if (status == google.maps.places.PlacesServiceStatus.OK) {
+              self.searchWithinBounds(typesToSearchFor, resultingBounds, function(results, searchStatus) {
+                if (searchStatus == google.maps.places.PlacesServiceStatus.OK) {
                   if(this.debugMode == true) {
                     var rect = new google.maps.Rectangle();
                     rect.setBounds(resultingBounds);
                     rect.setMap(self.map);
                   }
-                  for (var i = 0; i < results.length; i++) {
-                    if(MapHelpers.withinRadiusOfAPoint(results[i], allPoints, searchRadius))
-                      self.addMarkerFromPlacesResult(results[i]);
+                  for (var j = 0; j < results.length; j++) {
+                    if(MapHelpers.withinRadiusOfAPoint(results[j], allPoints, searchRadius))
+                      self.addMarkerFromPlacesResult(results[j]);
                   }
+                }
+
+                if (typeof(self.onSearchEnd) != 'undefined') {
+                  self.onSearchEnd(results, searchStatus);
                 }
               });
             }
           //// Search method by making loadsa requests
           } else if(self.searchMethod == "RADIUS") {
+            var relevantResults = [],
+              searchStatus;
+
             for(var i = 0; i < allPoints.length; i++)
             {
-              self.searchAroundPoint(allPoints[i], typesToSearchFor, searchRadius, self.searchService, function(results, status) {
-                if (status == google.maps.places.PlacesServiceStatus.OK) {
-                  for (var i = 0; i < results.length; i++) {
-                    self.addMarkerFromPlacesResult(results[i]);
+              self.searchAroundPoint(allPoints[i], typesToSearchFor, searchRadius, self.searchService, function(results, sStatus) {
+                if (sStatus == google.maps.places.PlacesServiceStatus.OK) {
+                  if (typeof searchStatus === 'undefined') {
+                    // We only set if it's undefined because we want to return a non-200 if anything at all goes wrong down in the else
+                    searchStatus = sStatus;
                   }
-                  if(typeof(self.onSearchStep) != 'undefined')
+
+                  relevantResults = relevantResults.concat(results);
+
+                  for (var j = 0; j < results.length; j++) {
+                    self.addMarkerFromPlacesResult(results[j]);
+                  }
+
+                  if(typeof(self.onSearchStep) != 'undefined') {
                     self.onSearchStep(1, 1);
+                  }
+                } else {
+                  searchStatus = sStatus;
                 }
               });
 
@@ -162,12 +181,12 @@ function Scroutenise(map, searchService, directionsService, directionsDisplay, a
                   radius: searchRadius
                 }));
               }
+
+              if (i == (allPoints.length - 1) && typeof (self.onSearchEnd) != 'undefined') {
+                self.onSearchEnd(relevantResults, searchStatus);
+              }
             }
           }
-        }
-
-        if (typeof(this.onSearchEnd) != 'undefined') {
-          this.onSearchEnd(result, status);
         }
       });
     }
