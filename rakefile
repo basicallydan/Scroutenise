@@ -17,7 +17,7 @@ namespace :build do
   task :copy_files do
 		mkdir_p BIN_DIRECTORY
     cp_r JS_DIRECTORY + 'Scroutenise.min.js', BIN_DIRECTORY
-		cp_r JS_DIRECTORY + 'Scroutenise.min.js', EXAMPLE_DIRECTORY
+		mv JS_DIRECTORY + 'Scroutenise.min.js', EXAMPLE_DIRECTORY
   end
 	
 	desc "Run all the build tasks"
