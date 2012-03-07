@@ -159,7 +159,5 @@ function Scroutenise(map, searchService, directionsService, directionsDisplay, a
           this.onSearchEnd(result, status);
         }
       });
-
     }
   }
-}
