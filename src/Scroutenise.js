@@ -146,9 +146,12 @@ function Scroutenise(map) {
           //// Search method by making loadsa requests
           } else if(self.searchMethod == "RADIUS") {
             var relevantResults = [],
-              searchStatus;
+              searchStatus,
+              i,
+              j,
+              searchesCompleted = 0;
 
-            for(var i = 0; i < allPoints.length; i++)
+            for(i = 0; i < allPoints.length; i++)
             {
               self.searchAroundPoint(allPoints[i], typesToSearchFor, searchRadius, self.searchService, function(results, sStatus) {
                 if (sStatus == google.maps.places.PlacesServiceStatus.OK) {
@@ -159,7 +162,7 @@ function Scroutenise(map) {
 
                   relevantResults = relevantResults.concat(results);
 
-                  for (var j = 0; j < results.length; j++) {
+                  for (j = 0; j < results.length; j++) {
                     self.addMarkerFromPlacesResult(results[j]);
                   }
 
@@ -169,10 +172,17 @@ function Scroutenise(map) {
                 } else {
                   searchStatus = sStatus;
                 }
-              });
 
-              if(typeof(self.onSearchStep) != 'undefined')
-                self.onSearchStep(i, allPoints.length);
+                searchesCompleted += 1;
+
+                if (typeof self.onSearchStep != 'undefined') {
+                  self.onSearchStep(searchesCompleted, allPoints.length);
+                }
+
+                if (searchesCompleted == allPoints.length && typeof (self.onSearchEnd) != 'undefined') {
+                  self.onSearchEnd(relevantResults, searchStatus);
+                }
+              });
 
               if(this.debugMode == true)
               {
@@ -180,10 +190,6 @@ function Scroutenise(map) {
                   center: allPoints[i],
                   radius: searchRadius
                 }));
-              }
-
-              if (i == (allPoints.length - 1) && typeof (self.onSearchEnd) != 'undefined') {
-                self.onSearchEnd(relevantResults, searchStatus);
               }
             }
           }
