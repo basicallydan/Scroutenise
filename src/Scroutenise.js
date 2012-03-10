@@ -56,14 +56,12 @@ function Scroutenise(map) {
       }
     },
 
-    clearResults : function ()
-    {
+    clearResults : function () {
       this.map.clearMarkers();
       this.renderedResultReferences = [];
     },
 
-    searchWithinBounds : function (searchTypes, bounds, callback)
-    {        
+    searchWithinBounds : function (searchTypes, bounds, callback) {        
       var searchRequest = {
         bounds: bounds,
         types: searchTypes
@@ -71,8 +69,7 @@ function Scroutenise(map) {
       this.searchService.search(searchRequest, callback);
     },
 
-    searchAroundPoint : function (latLngPoint, searchTypes, searchRadius, searchService, callback)
-    {
+    searchAroundPoint : function (latLngPoint, searchTypes, searchRadius, searchService, callback) {
       var searchRequest = {
         location: latLngPoint,
         radius: searchRadius,
@@ -81,8 +78,7 @@ function Scroutenise(map) {
       this.searchService.search(searchRequest, callback);
     },
 
-    searchAroundPoint : function (latLngPoint, searchTypes, searchRadius, searchService, callback)
-    {
+    searchAroundPoint : function (latLngPoint, searchTypes, searchRadius, searchService, callback) {
       var searchRequest = {
         location: latLngPoint,
         radius: searchRadius,
@@ -91,8 +87,7 @@ function Scroutenise(map) {
       this.searchService.search(searchRequest, callback);
     },
 
-    getDirections : function (start, end, typesToSearchFor, searchRadius, travelMode)
-    {
+    getDirections : function (start, end, typesToSearchFor, searchRadius, travelMode) {
       var self = this,
         directions = {
           origin: start,
@@ -120,7 +115,7 @@ function Scroutenise(map) {
           //// Maybe split the bounds into x number of sections and search that way?
           //// Or a combo of both methods, instead of radius use bounds and then we can ensure
           //// That they join up
-          if(self.searchMethod == "BOUNDS") {
+          if(self.searchMethod === "BOUNDS") {
             for(var i = 0; i < 5; i++) {
               var originalBounds = result.routes[0].bounds;
               var resultingBounds = originalBounds.expandBy(searchRadius);
@@ -144,7 +139,7 @@ function Scroutenise(map) {
               });
             }
           //// Search method by making loadsa requests
-          } else if(self.searchMethod == "RADIUS") {
+          } else if(self.searchMethod === "RADIUS") {
             var relevantResults = [],
               searchStatus,
               i,
