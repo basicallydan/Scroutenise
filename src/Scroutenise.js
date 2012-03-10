@@ -108,7 +108,11 @@ function Scroutenise(map) {
         if (status == google.maps.DirectionsStatus.OK) {
           self.directionsDisplay.setDirections(result);
 
-          var allPoints = DirectionsRouteHelpers.getPathAsLatLngArray(result, searchRadius / 2);
+          var allPoints = DirectionsRouteHelpers.getPathAsLatLngArray(result, searchRadius / 2),
+            originalBounds = result.routes[0].bounds,
+            resultingBounds;
+
+          resultingBounds = originalBounds.expandBy(searchRadius)
 
           //// Search method: make one request using bounds and then trim it
           //// This method is slightly flawed because 20 is the maximum number of results
@@ -117,9 +121,6 @@ function Scroutenise(map) {
           //// That they join up
           if(self.searchMethod === "BOUNDS") {
             for(var i = 0; i < 5; i++) {
-              var originalBounds = result.routes[0].bounds;
-              var resultingBounds = originalBounds.expandBy(searchRadius);
-
               self.searchWithinBounds(typesToSearchFor, resultingBounds, function(results, searchStatus) {
                 if (searchStatus == google.maps.places.PlacesServiceStatus.OK) {
                   if(this.debugMode == true) {
@@ -134,7 +135,7 @@ function Scroutenise(map) {
                 }
 
                 if (typeof(self.onSearchEnd) != 'undefined') {
-                  self.onSearchEnd(results, searchStatus);
+                  self.onSearchEnd(results, searchStatus, resultingBounds);
                 }
               });
             }
@@ -175,7 +176,7 @@ function Scroutenise(map) {
                 }
 
                 if (searchesCompleted == allPoints.length && typeof (self.onSearchEnd) != 'undefined') {
-                  self.onSearchEnd(relevantResults, searchStatus);
+                  self.onSearchEnd(relevantResults, searchStatus, resultingBounds);
                 }
               });
 
