@@ -61,33 +61,24 @@ function Scroutenise(map) {
       this.renderedResultReferences = [];
     },
 
-    searchWithinBounds : function (searchTypes, bounds, callback) {        
-      var searchRequest = {
-        bounds: bounds,
-        types: searchTypes
-      };
-      this.searchService.search(searchRequest, callback);
-    },
-
-    searchAroundPoint : function (latLngPoint, searchTypes, searchRadius, searchService, callback) {
+    searchAroundPoint : function (latLngPoint, searchFor, searchRadius, searchService, callback) {
       var searchRequest = {
         location: latLngPoint,
-        radius: searchRadius,
-        types: searchTypes
+        radius: searchRadius
       };
+
+      if(typeof searchFor.types !== 'undefined') {
+        searchRequest.types = searchFor.types;
+      }
+
+      if(typeof searchFor.name !== 'undefined') {
+        searchRequest.name = searchFor.name;
+      }
+
       this.searchService.search(searchRequest, callback);
     },
 
-    searchAroundPoint : function (latLngPoint, searchTypes, searchRadius, searchService, callback) {
-      var searchRequest = {
-        location: latLngPoint,
-        radius: searchRadius,
-        types: searchTypes
-      };
-      this.searchService.search(searchRequest, callback);
-    },
-
-    getDirections : function (start, end, typesToSearchFor, searchRadius, travelMode) {
+    getDirections : function (start, end, searchFor, searchRadius, travelMode) {
       var self = this,
         directions = {
           origin: start,
@@ -114,79 +105,51 @@ function Scroutenise(map) {
 
           resultingBounds = originalBounds.expandBy(searchRadius)
 
-          //// Search method: make one request using bounds and then trim it
-          //// This method is slightly flawed because 20 is the maximum number of results
-          //// Maybe split the bounds into x number of sections and search that way?
-          //// Or a combo of both methods, instead of radius use bounds and then we can ensure
-          //// That they join up
-          if(self.searchMethod === "BOUNDS") {
-            for(var i = 0; i < 5; i++) {
-              self.searchWithinBounds(typesToSearchFor, resultingBounds, function(results, searchStatus) {
-                if (searchStatus == google.maps.places.PlacesServiceStatus.OK) {
-                  if(this.debugMode == true) {
-                    var rect = new google.maps.Rectangle();
-                    rect.setBounds(resultingBounds);
-                    rect.setMap(self.map);
-                  }
-                  for (var j = 0; j < results.length; j++) {
-                    if(MapHelpers.withinRadiusOfAPoint(results[j], allPoints, searchRadius))
-                      self.addMarkerFromPlacesResult(results[j]);
-                  }
-                }
+          var relevantResults = [],
+            searchStatus,
+            i,
+            j,
+            searchesCompleted = 0;
 
-                if (typeof(self.onSearchEnd) != 'undefined') {
-                  self.onSearchEnd(results, searchStatus, resultingBounds);
-                }
-              });
-            }
-          //// Search method by making loadsa requests
-          } else if(self.searchMethod === "RADIUS") {
-            var relevantResults = [],
-              searchStatus,
-              i,
-              j,
-              searchesCompleted = 0;
-
-            for(i = 0; i < allPoints.length; i++)
-            {
-              self.searchAroundPoint(allPoints[i], typesToSearchFor, searchRadius, self.searchService, function(results, sStatus) {
-                if (sStatus == google.maps.places.PlacesServiceStatus.OK) {
-                  if (typeof searchStatus === 'undefined') {
-                    // We only set if it's undefined because we want to return a non-200 if anything at all goes wrong down in the else
-                    searchStatus = sStatus;
-                  }
-
-                  relevantResults = relevantResults.concat(results);
-
-                  for (j = 0; j < results.length; j++) {
-                    self.addMarkerFromPlacesResult(results[j]);
-                  }
-
-                  if(typeof(self.onSearchStep) != 'undefined') {
-                    self.onSearchStep(1, 1);
-                  }
-                } else {
+          for(i = 0; i < allPoints.length; i++)
+          {
+            self.searchAroundPoint(allPoints[i], typesToSearchFor, searchRadius, self.searchService, function(results, sStatus) {
+              if (sStatus == google.maps.places.PlacesServiceStatus.OK) {
+                if (typeof searchStatus === 'undefined') {
+                  // We only set if it's undefined because we want to return a non-200 if anything at all goes wrong down in the else
                   searchStatus = sStatus;
                 }
 
-                searchesCompleted += 1;
+                relevantResults = relevantResults.concat(results);
 
-                if (typeof self.onSearchStep != 'undefined') {
-                  self.onSearchStep(searchesCompleted, allPoints.length);
+                for (j = 0; j < results.length; j++) {
+                  self.addMarkerFromPlacesResult(results[j]);
                 }
 
-                if (searchesCompleted == allPoints.length && typeof (self.onSearchEnd) != 'undefined') {
-                  self.onSearchEnd(relevantResults, searchStatus, resultingBounds);
+                if(typeof(self.onSearchStep) != 'undefined') {
+                  self.onSearchStep(1, 1);
                 }
-              });
-
-              if(this.debugMode == true)
-              {
-                self.map.addCircle(new google.maps.Circle({
-                  center: allPoints[i],
-                  radius: searchRadius
-                }));
+              } else {
+                searchStatus = sStatus;
               }
+
+              searchesCompleted += 1;
+
+              if (typeof self.onSearchStep != 'undefined') {
+                self.onSearchStep(searchesCompleted, allPoints.length);
+              }
+
+              if (searchesCompleted == allPoints.length && typeof (self.onSearchEnd) != 'undefined') {
+                self.onSearchEnd(relevantResults, searchStatus, resultingBounds);
+              }
+            });
+
+            if(this.debugMode == true)
+            {
+              self.map.addCircle(new google.maps.Circle({
+                center: allPoints[i],
+                radius: searchRadius
+              }));
             }
           }
         }
