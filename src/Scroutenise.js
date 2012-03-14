@@ -113,7 +113,7 @@ function Scroutenise(map) {
 
           for(i = 0; i < allPoints.length; i++)
           {
-            self.searchAroundPoint(allPoints[i], typesToSearchFor, searchRadius, self.searchService, function(results, sStatus) {
+            self.searchAroundPoint(allPoints[i], searchFor, searchRadius, self.searchService, function(results, sStatus) {
               if (sStatus == google.maps.places.PlacesServiceStatus.OK) {
                 if (typeof searchStatus === 'undefined') {
                   // We only set if it's undefined because we want to return a non-200 if anything at all goes wrong down in the else

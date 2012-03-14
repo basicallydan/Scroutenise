@@ -18,7 +18,7 @@ var scroutenise = new Scroutenise(map);
 scroutenise.getDirections(
   "Old Street Station, London",
   "Liverpool Street Station, London",
-  ['grocery_or_supermarket'],
+  { types : ['grocery_or_supermarket'] },
   100.00,
   google.maps.TravelMode.DRIVING
 );
@@ -28,6 +28,8 @@ The parameters in getDirections are, in the order of the example
 
 * `start` - a location usable by the <a href="http://code.google.com/apis/maps/documentation/javascript/directions.html">Google Maps Directions Service</a>, the start location of the route.
 * `end` - a location usable by the <a href="http://code.google.com/apis/maps/documentation/javascript/directions.html">Google Maps Directions Service</a>, the end location of the route.
-* `placeTypes` - a list of place types <a href="http://code.google.com/apis/maps/documentation/places/supported_types.html">supported by the Google Places API</a>
+* `searchFor` - an object with two properties
+** `types` - a list of place types <a href="http://code.google.com/apis/maps/documentation/places/supported_types.html">supported by the Google Places API</a>
+** `name` - a name of a place you'd like to search for. All results will be restricted to anything that matches this
 * `searchRadius` - the radius around which to search for places along the route, in metres
 * `travelMode` - a travel mode supported by the Google Maps V3 API
